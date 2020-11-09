@@ -231,7 +231,8 @@ namespace dd
       }
     else if (!_template.empty())
       {
-        throw MLLibBadParamException("template");
+        _module.create_native_template<TInputConnectorStrategy>(
+            _template, lib_ad, this->_inputc, this->_mlmodel, _device);
       }
 
     if (_classification)
