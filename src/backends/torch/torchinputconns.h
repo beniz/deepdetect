@@ -32,14 +32,12 @@
 
 #include "imginputfileconn.h"
 #include "txtinputfileconn.h"
-/*#include "backends/torch/db.hpp"
-  #include "backends/torch/db_lmdb.hpp"*/
 #include "csvtsinputfileconn.h"
 #include "torchdataset.h"
 #include "torchutils.h"
 
-#define TORCH_TEXT_TRANSACTION_SIZE 100
-#define TORCH_IMG_TRANSACTION_SIZE 10
+#define TORCH_TEXT_TRANSACTION_SIZE 1000
+#define TORCH_IMG_TRANSACTION_SIZE 1000
 
 namespace dd
 {

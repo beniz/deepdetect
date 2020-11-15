@@ -332,9 +332,17 @@ namespace dd
       }
 
     // TODO: data augmentation
-
     for (auto vec : data)
-      data_tensors.push_back(torch::stack(vec));
+      {
+        // image flip
+        torch::Tensor svec = torch::stack(vec);
+        double draw = _rnd_distribution(_rnd_generator);
+        if (draw <= 0.5)
+          svec = svec.flip(-1);
+
+        // store final tensor
+        data_tensors.push_back(svec);
+      }
 
     for (auto vec : target)
       target_tensors.push_back(torch::stack(vec));

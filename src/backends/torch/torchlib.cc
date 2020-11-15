@@ -465,7 +465,7 @@ namespace dd
     Tensor class_weights = {};
 
     // logging parameters
-    int64_t log_batch_period = 20;
+    int64_t log_batch_period = 1000;
 
     if (ad_mllib.has("template_params"))
       _template_params = ad_mllib;

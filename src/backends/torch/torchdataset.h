@@ -61,7 +61,7 @@ namespace dd
     std::string _backend; /**< db backend (currently only lmdb supported= */
     bool _db = false;     /**< is data in db ? */
     int32_t _batches_per_transaction
-        = 10; /**< number of batches per db transaction */
+        = 1000; /**< number of batches per db transaction */
     std::shared_ptr<db::Transaction> _txn;   /**< db transaction pointer */
     std::shared_ptr<spdlog::logger> _logger; /**< dd logger */
 
@@ -77,6 +77,9 @@ namespace dd
     InputConnectorStrategy *_inputc
         = nullptr;               /**< back ptr to input connector. */
     bool _classification = true; /**< whether a classification dataset. */
+
+    std::default_random_engine _rnd_generator;
+    std::uniform_real_distribution<double> _rnd_distribution;
 
     /**
      * \brief empty constructor
@@ -96,6 +99,7 @@ namespace dd
           _lfiles(d._lfiles), _batches(d._batches), _dbFullName(d._dbFullName),
           _inputc(d._inputc), _classification(d._classification)
     {
+      _rnd_distribution = std::uniform_real_distribution<double>(0.0, 1.0);
     }
 
     /**
