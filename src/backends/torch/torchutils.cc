@@ -19,7 +19,7 @@
  * along with deepdetect.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "torchUtils.h"
+#include "torchutils.h"
 #include "mllibstrategy.h"
 
 #include <google/protobuf/io/coded_stream.h>
@@ -92,6 +92,31 @@ namespace dd
         {
           add_parameters(std::make_shared<torch::jit::script::Module>(child),
                          params);
+        }
+    }
+
+    torch::Tensor toLongTensor(std::vector<int64_t> &values)
+    {
+      int64_t val_size = values.size();
+      return torch::from_blob(&values[0], at::IntList{ val_size }, at::kLong)
+          .clone();
+    }
+
+    std::vector<c10::IValue> unwrap_c10_vector(const c10::IValue &output)
+    {
+      if (output.isTensorList())
+        {
+          auto elems = output.toTensorList();
+          return std::vector<c10::IValue>(elems.begin(), elems.end());
+        }
+      else if (output.isTuple())
+        {
+          auto &elems = output.toTuple()->elements();
+          return std::vector<c10::IValue>(elems.begin(), elems.end());
+        }
+      else
+        {
+          return { output };
         }
     }
   }

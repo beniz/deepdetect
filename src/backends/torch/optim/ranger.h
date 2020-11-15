@@ -50,6 +50,8 @@ namespace dd
     TORCH_ARG(betas_t, betas) = std::make_tuple(0.9, 0.999);
     TORCH_ARG(double, eps) = 1e-8;
     TORCH_ARG(double, weight_decay) = 0.0;
+    TORCH_ARG(bool, clip) = false;
+    TORCH_ARG(double, clip_value) = 5.0;
     TORCH_ARG(bool, decoupled_wd) = false;
     TORCH_ARG(bool, rectified) = true;
     TORCH_ARG(bool, lookahead) = true;
@@ -72,7 +74,6 @@ namespace dd
     TORCH_ARG(int64_t, step) = 0;
     TORCH_ARG(torch::Tensor, exp_avg);
     TORCH_ARG(torch::Tensor, exp_avg_sq);
-    TORCH_ARG(torch::Tensor, max_exp_avg_sq) = {};
     TORCH_ARG(torch::Tensor, slow_buffer);
 
   public:
@@ -103,6 +104,8 @@ namespace dd
                   "Invalid beta parameter at index 1: ", std::get<1>(betas));
       TORCH_CHECK(defaults.weight_decay() >= 0,
                   "Invalid weight_decay value: ", defaults.weight_decay());
+      TORCH_CHECK(!defaults.clip() || defaults.clip_value() >= 0,
+                  "Invalid clip value: ", defaults.clip_value());
       TORCH_CHECK(defaults.lsteps() >= 0,
                   "Invalid lookahead steps: ", defaults.lsteps());
       TORCH_CHECK(defaults.lalpha() >= 0,

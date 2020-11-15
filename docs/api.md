@@ -690,6 +690,8 @@ iterations           | int          | yes      | N/A     | Max number of solver'
 snapshot             | int          | yes      | N/A     | Iterations between model snapshots
 snapshot_prefix      | string       | yes      | empty   | Prefix to snapshot file, supports repository
 solver_type          | string       | yes      | SGD     | from "SGD", "ADAGRAD", "NESTEROV", "RMSPROP", "ADADELTA", "ADAM",  "AMSGRAD", "RANGER", "RANGER_PLUS", "ADAMW", "SGDW", "AMSGRADW" (*W version for decoupled weight decay, RANGER_PLUS is ranger + adabelief + centralized_gradient)
+clip                 | bool         | yes      | false (true if RANGER* selected) | clip gradients, implemented only in ranger
+clip_value           | real         | yes      | 5.0     | value for  clipping gradients (used only by RANGER)
 rectified            | bool         | yes      | false   | rectified momentum variance ie https://arxiv.org/abs/1908.03265 valid for ADAM[W] and AMSGRAD[W]
 adabelief            | bool         | yes      | false   | adabelief mod for ADAM https://arxiv.org/abs/2010.07468
 gradient_centralization | bool         | yes      | false   | centralized gradient mod for ADAM ie https://arxiv.org/abs/2004.01461v2
@@ -732,7 +734,7 @@ General:
 Parameter       | Type   | Optional | Default | Description
 ---------       | ----   | -------- | ------- | -----------
 gpu             | bool   | yes      | false   | whether to use gpu
-gpuid           | int    | yes      | false   | id of gpu to use, defaults to -1 meaning all available
+gpuid           | int or array | yes | 0      | GPU id, use single int for single GPU, `-1` for using all GPUs, and array e.g. `[1,3]` for selecting among multiple GPUs
 nclasses        | int    | yes      | none    | if set to some int, add a classifier (linear/fullyConnected) with correposnding number of classes after torch traced model
 self_supervised | string | yes      | ""      | self-supervised mode: "mask" for masked language model
 embedding_size  | int    | yes      | 768     | embedding size for NLP models
@@ -1104,7 +1106,7 @@ test_batch_size | int  | yes      | N/A     | Prediction batch size (the server 
 Parameter     | Type   | Optional | Default | Description
 ---------     | ----   | -------- | ------- | -----------
 gpu           | bool   | yes      | false   | Whether to use GPU
-gpuid         | int    | yes      | -1      | GPU id, use single int for single GPU, `-1` for using all GPUs.
+gpuid         | int or array | yes | 0      | GPU id, use single int for single GPU, `-1` for using all GPUs, and array e.g. `[1,3]` for selecting among multiple GPUs
 extract_layer | string | yes      | ""      | in bert models "hidden_state" allows to extract raw hidden_states values to return as output. Requires the service to be declared as 'unsupervised'
 
 
