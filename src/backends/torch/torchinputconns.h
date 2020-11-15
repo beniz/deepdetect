@@ -192,6 +192,8 @@ namespace dd
      */
     ImgTorchInputFileConn() : ImgInputFileConn()
     {
+      _dataset._inputc = this;
+      _test_dataset._inputc = this;
       set_transaction_size(TORCH_IMG_TRANSACTION_SIZE);
     }
 
@@ -201,6 +203,8 @@ namespace dd
     ImgTorchInputFileConn(const ImgTorchInputFileConn &i)
         : ImgInputFileConn(i), TorchInputInterface(i)
     {
+      _dataset._inputc = this;
+      _test_dataset._inputc = this;
       set_transaction_size(TORCH_IMG_TRANSACTION_SIZE);
     }
 
@@ -261,7 +265,7 @@ namespace dd
     void transform(const APIData &ad);
 
   private:
-    template <typename T>
+    /*template <typename T>
     int add_image_file(TorchDataset &dataset, const std::string &fname,
                        T target);
 
@@ -269,7 +273,7 @@ namespace dd
 
     at::Tensor target_to_tensor(const int &target);
 
-    at::Tensor target_to_tensor(const std::vector<double> &target);
+    at::Tensor target_to_tensor(const std::vector<double> &target);*/
   };
 
   /**
@@ -306,6 +310,8 @@ namespace dd
      */
     void init(const APIData &ad)
     {
+      _dataset._inputc = this;
+      _test_dataset._inputc = this;
       TxtInputFileConn::init(ad);
       TorchInputInterface::init(ad, _model_repo, _logger);
       fillup_parameters(ad);
@@ -459,6 +465,8 @@ namespace dd
      */
     void init(const APIData &ad)
     {
+      _dataset._inputc = this;
+      _test_dataset._inputc = this;
       TorchInputInterface::init(ad, _model_repo, _logger);
       fillup_parameters(ad);
     }
