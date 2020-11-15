@@ -275,7 +275,7 @@ namespace dd
     else if (!_template.empty())
       {
         _module.create_native_template<TInputConnectorStrategy>(
-            _template, lib_ad, this->_inputc, this->_mlmodel, _device);
+            _template, lib_ad, this->_inputc, this->_mlmodel, _main_device);
       }
 
     if (_classification)
