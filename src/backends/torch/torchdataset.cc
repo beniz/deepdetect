@@ -142,10 +142,21 @@ namespace dd
     if (!_db)
       {
         _indices.clear();
-
-        for (unsigned int i = 0; i < _batches.size(); ++i)
+        if (!_lfiles.empty()) // list of files
           {
-            _indices.push_back(i);
+            _indices = std::vector<int64_t>(_lfiles.size());
+            std::iota(std::begin(_indices), std::end(_indices), 0);
+          }
+        else if (!_batches.empty())
+          {
+            for (unsigned int i = 0; i < _batches.size(); ++i)
+              {
+                _indices.push_back(i);
+              }
+          }
+        else
+          {
+            //
           }
       }
     else // below db case
@@ -216,26 +227,69 @@ namespace dd
 
     if (!_db)
       {
-        while (count != 0)
+        if (!_lfiles.empty()) // prefetch batch from file list
           {
-            auto id = _indices.back();
-            auto entry = _batches[id];
+            ImgTorchInputFileConn *inputc
+                = reinterpret_cast<ImgTorchInputFileConn *>(_inputc);
 
-            for (unsigned int i = 0; i < entry.data.size(); ++i)
+            size_t nlfiles = 0;
+            while (nlfiles < count)
               {
-                while (i >= data.size())
-                  data.emplace_back();
-                data[i].push_back(entry.data.at(i));
-              }
-            for (unsigned int i = 0; i < entry.target.size(); ++i)
-              {
-                while (i >= target.size())
-                  target.emplace_back();
-                target[i].push_back(entry.target.at(i));
+                auto id = _indices.back();
+                auto lfile = _lfiles.at(id);
+                if (_classification)
+                  add_image_file(lfile.first,
+                                 static_cast<int>(lfile.second.at(0)),
+                                 inputc->height(), inputc->width());
+                else // vector generic type, including regression
+                  add_image_file(lfile.first, lfile.second, inputc->height(),
+                                 inputc->width());
+                ++nlfiles;
+                _indices.pop_back();
               }
 
-            _indices.pop_back();
-            count--;
+            for (size_t id = 0; id < count; ++id)
+              {
+                auto entry = _batches[id];
+
+                for (unsigned int i = 0; i < entry.data.size(); ++i)
+                  {
+                    while (i >= data.size())
+                      data.emplace_back();
+                    data[i].push_back(entry.data.at(i));
+                  }
+                for (unsigned int i = 0; i < entry.target.size(); ++i)
+                  {
+                    while (i >= target.size())
+                      target.emplace_back();
+                    target[i].push_back(entry.target.at(i));
+                  }
+              }
+            _batches.clear();
+          }
+        else // batches
+          {
+            while (count != 0)
+              {
+                auto id = _indices.back();
+                auto entry = _batches[id];
+
+                for (unsigned int i = 0; i < entry.data.size(); ++i)
+                  {
+                    while (i >= data.size())
+                      data.emplace_back();
+                    data[i].push_back(entry.data.at(i));
+                  }
+                for (unsigned int i = 0; i < entry.target.size(); ++i)
+                  {
+                    while (i >= target.size())
+                      target.emplace_back();
+                    target[i].push_back(entry.target.at(i));
+                  }
+
+                _indices.pop_back();
+                count--;
+              }
           }
       }
     else // below db case
@@ -276,6 +330,8 @@ namespace dd
             count--;
           }
       }
+
+    // TODO: data augmentation
 
     for (auto vec : data)
       data_tensors.push_back(torch::stack(vec));
@@ -331,7 +387,6 @@ namespace dd
     if (dimg._imgs.size() != 0)
       {
         at::Tensor imgt = image_to_tensor(dimg._imgs[0], height, width);
-        // at::Tensor targett{ torch::full(1, target, torch::kLong) };
         at::Tensor targett = target_to_tensor(target);
 
         add_batch({ imgt }, { targett });
