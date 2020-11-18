@@ -26,7 +26,7 @@
 
 namespace dd
 {
-  void TorchDataset::finalize_db()
+  void TorchDataset::db_finalize()
   {
     if (_current_index % _batches_per_transaction != 0)
       {
@@ -42,7 +42,7 @@ namespace dd
     _current_index = 0;
   }
 
-  void TorchDataset::pop(int64_t index, std::string &data, std::string &target)
+  void TorchDataset::pop_db_elt(int64_t index, std::string &data, std::string &target)
   {
     if (_dbData == nullptr)
       {
@@ -73,8 +73,8 @@ namespace dd
       }
   }
 
-  void TorchDataset::add_elt(int64_t index, std::string data,
-                             std::string target)
+  void TorchDataset::add_db_elt(int64_t index, std::string data,
+				std::string target)
   {
     if (_dbData == nullptr)
       {
@@ -149,10 +149,12 @@ namespace dd
           }
         else if (!_batches.empty())
           {
-            for (unsigned int i = 0; i < _batches.size(); ++i)
+            /*for (unsigned int i = 0; i < _batches.size(); ++i)
               {
                 _indices.push_back(i);
-              }
+		}*/
+	    _indices = std::vector<int64_t>(_batches.size());
+            std::iota(std::begin(_indices), std::end(_indices), 0);
           }
         else
           {
@@ -181,7 +183,7 @@ namespace dd
               }
             cursor->Next();
           }
-        delete (cursor);
+	  delete (cursor);
       }
 
     if (_shuffle)
