@@ -81,6 +81,7 @@ namespace dd
 
     std::default_random_engine _rnd_generator;
     std::uniform_real_distribution<double> _rnd_distribution;
+    bool _image = false; /**< whether an image dataset. */
 
     /**
      * \brief empty constructor
@@ -98,7 +99,7 @@ namespace dd
           _batches_per_transaction(d._batches_per_transaction), _txn(d._txn),
           _logger(d._logger), _shuffle(d._shuffle),_dbData(d._dbData), _indices(d._indices),
           _lfiles(d._lfiles), _batches(d._batches), _dbFullName(d._dbFullName),
-          _inputc(d._inputc), _classification(d._classification)
+      _inputc(d._inputc), _classification(d._classification), _image(d._image)
     {
       _rnd_distribution = std::uniform_real_distribution<double>(0.0, 1.0);
     }
@@ -115,6 +116,10 @@ namespace dd
     void add_batch(const std::vector<at::Tensor> &data,
                    const std::vector<at::Tensor> &target = {});
 
+    void add_image_batch(const cv::Mat &bgr,
+			 const int &width, const int &height,
+			 const int &target);
+    
     /**
      * \brief reset dataset reading status : ie start new epoch
      */
@@ -257,6 +262,12 @@ namespace dd
      */
     void write_tensors_to_db(const std::vector<at::Tensor> &data,
                              const std::vector<at::Tensor> &target);
+
+    void write_image_to_db(const cv::Mat &bgr, const int &target);
+
+    void read_image_from_db(const std::string &datas,
+			    const std::string &targets,
+			    cv::Mat &bgr, int &target);
   };
 
 }

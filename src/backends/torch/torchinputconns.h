@@ -202,7 +202,9 @@ namespace dd
         : ImgInputFileConn(i), TorchInputInterface(i)
     {
       _dataset._inputc = this;
+      _dataset._image = true;
       _test_dataset._inputc = this;
+      _test_dataset._image = true;
       set_db_transaction_size(TORCH_IMG_TRANSACTION_SIZE);
     }
 
