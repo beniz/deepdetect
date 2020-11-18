@@ -98,9 +98,7 @@ namespace dd
   void ViT::BlockImpl::init_block(const double &mlp_ratio,
                                   const bool &qkv_bias, const double &qk_scale,
                                   const double &drop_val,
-                                  const double &attn_drop_val,
-                                  const double &drop_path,
-                                  const std::string &act)
+                                  const double &attn_drop_val)
   {
     _norm1 = register_module(
         "norm1", torch::nn::LayerNorm(torch::nn::LayerNormOptions({ _dim })));
@@ -108,13 +106,11 @@ namespace dd
     _attn = register_module("attn",
                             Attention(_dim, _num_heads, qkv_bias, qk_scale,
                                       attn_drop_val, drop_val));
-    // no droppath for now
-    (void)drop_path;
     _norm2 = register_module(
         "norm2", torch::nn::LayerNorm(torch::nn::LayerNormOptions({ _dim })));
 
     unsigned int mlp_hidden_dim = static_cast<int>(_dim * mlp_ratio);
-    _mlp = register_module("mlp", MLP(_dim, mlp_hidden_dim, 0, act, drop_val));
+    _mlp = register_module("mlp", MLP(_dim, mlp_hidden_dim, 0, "gelu", drop_val));
   }
 
   torch::Tensor ViT::BlockImpl::forward(torch::Tensor x)
@@ -262,7 +258,7 @@ namespace dd
         _blocks.push_back(
             register_module("block_" + std::to_string(d),
                             Block(embed_dim, num_heads, mlp_ratio, qkv_bias,
-                                  qk_scale, drop_rate, attn_drop_rate, 0.0)));
+                                  qk_scale, drop_rate, attn_drop_rate)));
       }
     _norm = register_module(
         "norm",
