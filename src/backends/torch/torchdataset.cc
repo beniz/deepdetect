@@ -126,14 +126,14 @@ namespace dd
         _logger->info("Put {} tensors in db", _current_index);
       }
   }
-
+  
   void TorchDataset::add_batch(const std::vector<at::Tensor> &data,
                                const std::vector<at::Tensor> &target)
   {
     if (!_db)
       _batches.push_back(TorchBatch(data, target));
-    else
-      write_tensors_to_db(data, target);
+    else // db
+	write_tensors_to_db(data, target);
   }
 
   void TorchDataset::reset(bool shuffle, db::Mode dbmode)
@@ -163,15 +163,20 @@ namespace dd
       }
     else // below db case
       {
-        _indices.clear();
-        if (_dbData == nullptr)
+        //_indices.clear();
+        if (!_dbData)
           {
             _dbData = std::shared_ptr<db::DB>(db::GetDB(_backend));
             _dbData->Open(_dbFullName, dbmode);
           }
 
-        db::Cursor *cursor = _dbData->NewCursor();
-        while (cursor->valid())
+	if (!_dbCursor)
+	  _dbCursor = _dbData->NewCursor();
+	
+	_indices = std::vector<int64_t>(_dbData->Count());
+	std::iota(std::begin(_indices), std::end(_indices), 0);
+	
+        /*while (cursor->valid())
           {
             std::string key = cursor->key();
             size_t pos = key.find("_data");
@@ -182,8 +187,8 @@ namespace dd
                 _indices.push_back(id);
               }
             cursor->Next();
-          }
-	  delete (cursor);
+	    }
+	    delete (cursor);*/
       }
 
     if (_shuffle)
@@ -298,18 +303,37 @@ namespace dd
       {
         while (count != 0)
           {
-            auto id = _indices.back();
             std::stringstream data_key;
             std::stringstream target_key;
-            data_key << id << "_data";
-            target_key << id << "_target";
 
-            std::string targets;
+	    if (!_dbCursor->valid())
+	      {
+		delete _dbCursor;
+		_dbCursor = _dbData->NewCursor();
+	      }
+	    std::string key = _dbCursor->key();
+	    size_t pos = key.find("_data");
+	    if (pos != std::string::npos)
+	      {
+		data_key << key;
+		std::string sid = key.substr(0, pos);
+		target_key << sid << "_target";
+	      }
+	    else // skip targets
+	      {
+		_dbCursor->Next();
+		continue;
+	      }
+	    
+	    std::string targets;
             std::string datas;
             _dbData->Get(data_key.str(), datas);
             _dbData->Get(target_key.str(), targets);
-            std::stringstream datastream(datas);
+	    _dbCursor->Next();
+	    
+	    std::stringstream datastream(datas);
             std::stringstream targetstream(targets);
+
             std::vector<torch::Tensor> d;
             std::vector<torch::Tensor> t;
             torch::load(d, datastream);
@@ -328,7 +352,7 @@ namespace dd
                 target[i].push_back(t.at(i));
               }
 
-            _indices.pop_back();
+            //_indices.pop_back();
             count--;
           }
       }
