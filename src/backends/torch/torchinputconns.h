@@ -243,7 +243,7 @@ namespace dd
     void read_image_folder(std::vector<std::pair<std::string, int>> &lfiles,
                            std::unordered_map<int, std::string> &hcorresp,
                            std::unordered_map<std::string, int> &hcorresp_r,
-                           const std::string &folderPath);
+                           const std::string &folderPath, const bool &test=false);
 
     /**
      * \brief read images from txt list
