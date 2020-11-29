@@ -314,8 +314,9 @@ namespace dd
       }
     if (_native)
       {
-        return torch::nn::parallel::data_parallel(
-            _native, torch_utils::to_tensor_safe(source[0]), devices, _device);
+        return parallel::dd_data_parallel(
+            _native, torch_utils::to_tensor_safe(source[0]), devices, _device,
+            0 /*dim*/, _native->_clone);
       }
     if (_traced)
       {

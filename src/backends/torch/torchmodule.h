@@ -36,6 +36,7 @@
 #include <torch/script.h>
 #include <torch/nn/pimpl.h>
 #include <torch/nn/parallel/data_parallel.h>
+#include "data_parallel.h"
 
 namespace dd
 {
